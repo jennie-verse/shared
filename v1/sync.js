@@ -136,6 +136,45 @@ export async function readFile(config, path) {
 }
 
 /**
+ * 폴더 안 항목 목록 조회.
+ * @param {{owner:string, repo:string, token:string, branch?:string}} config
+ * @param {string} dirPath - 저장소 루트 기준 폴더 경로 (예: 'clip')
+ * @returns {Promise<Array<{name:string, path:string, sha:string, size:number, type:string}>>}
+ *   폴더가 없으면(404) 빈 배열을 반환합니다.
+ */
+export async function listDir(config, dirPath) {
+  const { owner, repo, token, branch = 'main' } = config;
+  const url = `${apiUrl(owner, repo, dirPath)}?ref=${encodeURIComponent(branch)}`;
+
+  const res = await ghFetch(url, token, {
+    headers: { Accept: 'application/vnd.github+json' },
+  });
+
+  if (res.status === 404) {
+    return [];
+  }
+  if (!res.ok) {
+    throw new SyncError(`폴더를 읽지 못했습니다 (HTTP ${res.status}).`, {
+      type: classifyStatus(res.status),
+      status: res.status,
+    });
+  }
+
+  const meta = await res.json();
+  if (!Array.isArray(meta)) {
+    throw new SyncError('경로가 폴더가 아닙니다. 폴더 경로를 지정하세요.', { type: 'unknown' });
+  }
+
+  return meta.map((entry) => ({
+    name: entry.name,
+    path: entry.path,
+    sha: entry.sha,
+    size: entry.size,
+    type: entry.type === 'dir' ? 'dir' : 'file',
+  }));
+}
+
+/**
  * 파일 쓰기 (생성 또는 수정).
  * @param {{owner:string, repo:string, token:string, branch?:string}} config
  * @param {string} path

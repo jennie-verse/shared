@@ -33,6 +33,7 @@
     'readFile',
     'writeFile',
     'deleteFile',
+    'listDir',
     'utf8ToBase64',
     'base64ToUtf8',
     'outboxEnqueue',
