@@ -1,0 +1,103 @@
+/* ==========================================================================
+   shared/v1/theme.css
+   webapp-standard.md 2장·3장 기준 색상·글꼴 변수
+
+   v1/ 은 한 번 올린 뒤 절대 수정하지 않습니다. README.md 를 확인하세요.
+
+   이 파일은 CSS 변수와 아주 기본적인 접근성 규칙만 정의합니다.
+   레이아웃, 카드, 버튼 같은 구체적인 컴포넌트 스타일은 각 앱의 app.css 에서
+   이 변수를 참조해 만듭니다. Lexend 폰트 파일 자체는 각 앱이 자체적으로
+   포함합니다 (오프라인 사용, 외부 CDN 금지 원칙).
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* 대표색 */
+  --color-primary: #EFB3C1;
+  --color-primary-text: #8A4257;
+  --color-primary-tint: #FBE4EA;
+
+  /* 기본 화면 */
+  --color-bg: #FDF7F8;
+  --color-card: #FFFFFF;
+  --color-text: #4A3A40;
+  --color-text-secondary: #8A7780;
+  --color-text-faint: #B0A0A7;
+  --color-border: #EDE3E6;
+
+  /* 보조 파스텔 팔레트 (분류·태그 등) */
+  --palette-baby-pink: #F6C6D4;
+  --palette-soft-rose: #EFB3C1;
+  --palette-sky: #B9D8EE;
+  --palette-yellow: #F7E3A8;
+  --palette-green: #CBE5B4;
+  --palette-orange: #F8D2A8;
+  --palette-mint: #A8DCC6;
+  --palette-lavender: #CFC6E8;
+  --palette-purple: #BFACE2;
+  --palette-beige: #E4D7C0;
+  --palette-warm-white: #FDFCF9;
+
+  /* 상태 색상 (테마와 무관하게 고정) */
+  --color-success: #8ECFB4;
+  --color-warning: #F0C193;
+  --color-danger: #DE8580;
+
+  /* 글꼴 */
+  --font-family-base: "Lexend", Verdana, "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+
+  /* 글자 크기 (표준 4단계 = 기본 12px). 6단계 조절은 fontsize.js 의
+     --app-font-size 를 우선 참조하고, 이 변수들은 고정 용도(제목 등)로 씁니다. */
+  --font-size-page-title: 24px;
+  --font-size-section-title: 14px;
+  --font-size-body: 12px;
+  --font-size-small: 11px;
+  --font-size-min: 9px;
+  --font-size-button: 13px;
+  --font-size-input: 16px; /* iOS 자동 확대 방지, 예외 없이 고정 */
+
+  /* 터치·모양 */
+  --touch-target: 44px;
+  --radius-card: 14px;
+  --radius-control: 10px;
+  --shadow-soft: 0 1px 3px rgba(74, 58, 64, 0.06), 0 1px 2px rgba(74, 58, 64, 0.04);
+  --border-width: 1px;
+}
+
+/* 텍스트 선택 색상 */
+::selection {
+  background: var(--color-primary-tint);
+  color: var(--color-primary-text);
+}
+
+/* Focus 표시 — 제거하지 않고 테마에 맞춰 조정 */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar (WebKit 계열) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
