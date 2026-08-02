@@ -36,6 +36,7 @@
     'utf8ToBase64',
     'base64ToUtf8',
     'outboxEnqueue',
+    'outboxEnqueueReplace',
     'outboxList',
     'outboxRemove',
     'outboxFlush',
