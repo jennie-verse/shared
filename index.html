@@ -42,7 +42,7 @@
   }
   h2 { margin: 0 0 10px; font-size: 14px; }
   ul { margin: 0; padding-left: 18px; }
-  li { margin-bottom: 6px; }
+  li { margin-bottom: 2px; }
   li:last-child { margin-bottom: 0; }
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -53,6 +53,13 @@
     padding: 1px 5px;
   }
   a { color: var(--accent-deep); }
+  li > a, footer > a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding: 0 4px;
+    margin: 0 -4px;
+  }
   a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .note {
     border-left: 3px solid var(--accent);
