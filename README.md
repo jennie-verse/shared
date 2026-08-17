@@ -43,7 +43,43 @@ shared/
     ├─ backup.js        JSON 백업 내보내기/가져오기 공통 코드 (ES module)
     ├─ fontsize.js       글자 크기 6단계(6/8/10/12/14/17px) 공통 코드 (ES module)
     └─ theme.css        webapp-standard.md 기준 색상·글꼴 CSS 변수
+└─ v2/
+    └─ journal.js      Daybook 날짜별 projection 계약·writer·reader (ES module)
 ```
+
+## Journal V2
+
+`v2/journal.js`는 기존 앱 데이터 동기화를 대체하지 않습니다. 사용자가 별도로
+`Include in journal`을 켠 source 앱이 `journal/` 아래에 날짜별 projection을 쓸 때만
+사용합니다. `shared` 자체는 활동 source가 아니며 `v1/` 파일은 변경하지 않습니다.
+
+Source 앱은 원래 저장을 먼저 완료한 뒤 동적 import로 journal 모듈을 불러야 합니다.
+모듈 로드나 원격 쓰기가 실패해도 원래 저장·sync·events 동작은 계속되어야 합니다.
+
+```js
+const { createJournalClient } = await import(
+  'https://jennie-verse.github.io/shared/v2/journal.js'
+);
+
+const journal = createJournalClient({
+  app: 'focus',
+  context: existingSyncContextId,
+  isEnabled: () => journalSetting === true,
+  resolveConfig: async () => ({ owner, repo, branch: 'main', token }),
+});
+
+await journal.enqueue(record, { date: '2026-08-17' });
+```
+
+계약 경로:
+
+- activity: `journal/activity/<app>/<YYYY-MM>/<date>.<context>.p01.json`
+- source status: `journal/status/<app>/<context>.json`
+- Daily note: `journal/notes/<YYYY-MM>/<date>.<context>.json`
+
+공용 writer는 900,000-byte part rollover, NFC 텍스트 정규화, tombstone과
+`updatedAt` 병합, 409/422 충돌 재읽기(최대 3회), token을 포함하지 않는 IndexedDB
+pending queue를 담당합니다. 테스트는 `node --test tests/journal.test.mjs`로 실행합니다.
 
 ## 쓰는 법
 

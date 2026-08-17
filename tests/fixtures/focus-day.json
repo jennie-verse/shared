@@ -1,0 +1,28 @@
+{
+  "v": 1,
+  "app": "focus",
+  "context": "fixture-a1b2c3d4",
+  "date": "2026-08-17",
+  "part": 1,
+  "updatedAt": "2026-08-17T10:30:00-05:00",
+  "records": [
+    {
+      "id": "session-fixture-1",
+      "kind": "session",
+      "at": "2026-08-17T09:00:00-05:00",
+      "updatedAt": "2026-08-17T09:25:00-05:00",
+      "deleted": false,
+      "title": "Focus session",
+      "data": {
+        "mode": "focus",
+        "startedAt": "2026-08-17T09:00:00-05:00",
+        "endedAt": "2026-08-17T09:25:00-05:00",
+        "plannedSeconds": 1500,
+        "elapsedSeconds": 1500,
+        "subject": "Fixture subject",
+        "task": "Fixture task",
+        "completed": true
+      }
+    }
+  ]
+}
