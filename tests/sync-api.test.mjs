@@ -28,3 +28,12 @@ test('v1 UTF-8 transport round-trips consumer data', () => {
     globalThis.atob = originalAtob;
   }
 });
+
+test('the public module index and notes are account-portable and expose v2 journal', async () => {
+  const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const notes = await readFile(new URL('../README.md', import.meta.url), 'utf8');
+  assert.match(index, /\.\/v2\/journal\.js/);
+  assert.match(index, /\.\/README\.md/);
+  assert.doesNotMatch(`${index}\n${notes}`, /jennie-verse/);
+  assert.match(notes, /<account>\.github\.io\/shared\/v2\/journal\.js/);
+});

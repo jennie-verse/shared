@@ -1,7 +1,8 @@
 # shared
 
 개인용 웹앱들이 함께 쓰는 공용 코드 저장소입니다. GitHub Pages로 배포되어
-`https://jennie-verse.github.io/shared/v1/...` 주소로 각 앱이 직접 불러다 씁니다.
+`https://<account>.github.io/shared/v1/...` 주소로 각 앱이 직접 불러다 씁니다.
+여기서 `<account>`는 이 저장소를 배포한 GitHub 계정 이름입니다.
 
 ---
 
@@ -58,7 +59,7 @@ Source 앱은 원래 저장을 먼저 완료한 뒤 동적 import로 journal 모
 
 ```js
 const { createJournalClient } = await import(
-  'https://jennie-verse.github.io/shared/v2/journal.js'
+  'https://<account>.github.io/shared/v2/journal.js'
 );
 
 const journal = createJournalClient({
@@ -88,7 +89,7 @@ pending queue를 담당합니다. 테스트는 `node --test tests/journal.test.m
 ```html
 <link rel="stylesheet" href="../shared/v1/theme.css">
 <script type="module">
-  import { readFile, writeFile } from 'https://jennie-verse.github.io/shared/v1/sync.js';
+  import { readFile, writeFile } from '../shared/v1/sync.js';
 </script>
 ```
 
@@ -96,7 +97,7 @@ pending queue를 담당합니다. 테스트는 `node --test tests/journal.test.m
 
 ```html
 <link rel="stylesheet" href="../shared/v1/theme.css">
-<script src="https://jennie-verse.github.io/shared/v1/sync-global.js"></script>
+<script src="../shared/v1/sync-global.js"></script>
 <script src="./app.js"></script>
 ```
 
