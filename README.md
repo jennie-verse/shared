@@ -82,6 +82,11 @@ await journal.enqueue(record, { date: '2026-08-17' });
 `updatedAt` 병합, 409/422 충돌 재읽기(최대 3회), token을 포함하지 않는 IndexedDB
 pending queue를 담당합니다. 테스트는 `node --test tests/journal.test.mjs`로 실행합니다.
 
+Folio는 파일 활동 외에 `excerpt-exported`, `highlight-created`,
+`highlight-updated`, `note-created`, `note-updated` projection을 쓸 수 있습니다.
+Source 앱은 표시할 인용문·메모·사람이 읽을 수 있는 위치만 투영해야 하며 원본 파일,
+PDF 좌표, DOM locator, 파일 hash와 credential은 Journal record에 넣지 않습니다.
+
 ## 쓰는 법
 
 **ES module 앱** (`<script type="module">` 을 쓰는 앱 — 예: bloom, petal)

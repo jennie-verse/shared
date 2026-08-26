@@ -29,7 +29,12 @@ export const JOURNAL_KINDS = Object.freeze({
     'bookmark-created',
     'vocabulary-created', 'vocabulary-updated',
   ],
-  folio: ['file-activity'],
+  folio: [
+    'file-activity',
+    'excerpt-exported',
+    'highlight-created', 'highlight-updated',
+    'note-created', 'note-updated',
+  ],
   quill: ['file-activity'],
   slate: ['board-activity'],
   grove: ['map-activity'],

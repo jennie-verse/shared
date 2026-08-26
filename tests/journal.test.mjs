@@ -38,6 +38,22 @@ function focusRecord(overrides = {}) {
   };
 }
 
+function folioRecord(overrides = {}) {
+  return {
+    id: 'annotation-1',
+    kind: 'highlight-created',
+    at: '2026-08-17T09:00:00-05:00',
+    updatedAt: '2026-08-17T09:00:00-05:00',
+    deleted: false,
+    title: 'Document.pdf',
+    data: {
+      documentId: 'document-1', documentType: 'pdf', locationLabel: 'p. 12',
+      quote: 'Cafe\u0301', note: 'Question', semanticColor: 'question',
+    },
+    ...overrides,
+  };
+}
+
 class FakeIo {
   constructor() {
     this.files = new Map();
@@ -112,6 +128,34 @@ test('fixture and records validate while invalid fields reject the whole envelop
   assert.throws(() => validateRecord('focus', focusRecord({ kind: 'clip' })));
   const normalized = validateRecord('focus', focusRecord({ title: 'Cafe\u0301' }));
   assert.equal(normalized.title, 'Café');
+});
+
+test('folio annotation kinds validate additively and normalize private text payloads', () => {
+  for (const kind of [
+    'excerpt-exported', 'highlight-created', 'highlight-updated',
+    'note-created', 'note-updated',
+  ]) {
+    assert.equal(validateRecord('folio', folioRecord({ kind })).kind, kind);
+  }
+  const normalized = validateRecord('folio', folioRecord());
+  assert.equal(normalized.data.quote, 'Café');
+  assert.throws(() => validateRecord('quill', folioRecord()));
+});
+
+test('folio annotations retain the newest update and disappear after a tombstone', () => {
+  const created = validateRecord('folio', folioRecord());
+  const updated = validateRecord('folio', folioRecord({
+    kind: 'highlight-updated',
+    updatedAt: '2026-08-17T10:00:00-05:00',
+    data: { ...folioRecord().data, note: 'Revised question' },
+  }));
+  assert.equal(mergeRecords([
+    { record: created, path: 'p01' }, { record: updated, path: 'p02' },
+  ])[0].record.data.note, 'Revised question');
+  const deleted = { ...updated, deleted: true, updatedAt: '2026-08-17T11:00:00-05:00' };
+  assert.equal(mergeRecords([
+    { record: created, path: 'p01' }, { record: updated, path: 'p02' }, { record: deleted, path: 'p03' },
+  ]).length, 0);
 });
 
 test('merge picks newest updatedAt, uses path as a deterministic tie-break, and keeps tombstones only on request', () => {
