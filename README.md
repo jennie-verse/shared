@@ -87,6 +87,17 @@ Folio는 파일 활동 외에 `excerpt-exported`, `highlight-created`,
 Source 앱은 표시할 인용문·메모·사람이 읽을 수 있는 위치만 투영해야 하며 원본 파일,
 PDF 좌표, DOM locator, 파일 hash와 credential은 Journal record에 넣지 않습니다.
 
+Tide의 `item-activity`와 Loom의 `block-activity`는 객체가 속한 날짜와 사용자가 실제로
+작업한 날짜를 분리하는 additive kind입니다. 공통 `data`에는 필요에 따라
+`activityDate`, `sourceDate`, `previousSourceDate`, `actions`, `firstAt`, `lastAt`,
+`contentIncluded`, `importedHistory`, `historyAccuracy`(`exact`, `inferred`,
+`future-only`), 원래 offset timestamp 또는 `originTimezone`을 넣을 수 있습니다.
+알 수 없는 `data` 필드는 운반되지만 app/kind/id/timestamp/title/data 검증은 유지됩니다.
+
+Source status는 `reportedAt`, `lastSuccessfulWriteAt`, `pendingCount`, `lastErrorCode`,
+`contentIncluded`, `backfill`, `redaction`의 안전한 필드만 허용합니다. 원문 포함을 끌 때는
+`transformPending()`으로 아직 전송되지 않은 projection도 같은 allowlist로 정제할 수 있습니다.
+
 ## 쓰는 법
 
 **ES module 앱** (`<script type="module">` 을 쓰는 앱 — 예: bloom, petal)

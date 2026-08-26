@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import {
   JOURNAL_APPS,
+  JOURNAL_KINDS,
   activityPath,
   createJournalClient,
   createMemoryQueue,
@@ -142,6 +143,16 @@ test('folio annotation kinds validate additively and normalize private text payl
   assert.throws(() => validateRecord('quill', folioRecord()));
 });
 
+test('Tide and Loom activity kinds extend the contract without changing existing kinds', () => {
+  assert.deepEqual(JOURNAL_KINDS.tide, ['clip', 'dump', 'item-activity']);
+  assert.deepEqual(JOURNAL_KINDS.loom, ['block', 'block-activity']);
+  assert.equal(validateRecord('tide', {
+    ...focusRecord(), id: 'clip-1:2026-08-17', kind: 'item-activity',
+    data: { activityDate: date, sourceDate: '2026-08-01', actions: ['copied'],
+      firstAt: focusRecord().at, lastAt: focusRecord().updatedAt, historyAccuracy: 'exact' },
+  }).kind, 'item-activity');
+});
+
 test('folio annotations retain the newest update and disappear after a tombstone', () => {
   const created = validateRecord('folio', folioRecord());
   const updated = validateRecord('folio', folioRecord({
@@ -213,13 +224,34 @@ test('status sanitizer excludes token, text, filenames, and full error messages'
   const safe = sanitizeStatus('focus', context, {
     journalEnabled: true, pendingCount: 2, token: 'never-store', title: 'private',
     lastErrorCode: 'NETWORK', errorMessage: 'private path',
+    contentIncluded: false,
     backfill: { status: 'running', processedDates: 2, token: 'never-store' },
+    redaction: { status: 'partial', from: date, totalDates: 3, note: 'private' },
   });
   assert.equal(safe.token, undefined);
   assert.equal(safe.title, undefined);
   assert.equal(safe.errorMessage, undefined);
   assert.deepEqual(safe.backfill, { status: 'running', processedDates: 2 });
+  assert.deepEqual(safe.redaction, { status: 'partial', from: date, totalDates: 3 });
+  assert.equal(safe.contentIncluded, false);
   assert.equal(JSON.stringify(safe).includes('never-store'), false);
+});
+
+test('pending projections can be sanitized before a later flush', async () => {
+  const queue = createMemoryQueue();
+  const io = new FakeIo();
+  const client = createJournalClient({ app: 'focus', context, queue, io,
+    resolveConfig: async () => ({}), debounceMs: 60_000, now });
+  await client.enqueue(focusRecord());
+  const result = await client.transformPending((record) => ({
+    ...record, title: 'Focus session', updatedAt: localIso(now()),
+    data: { mode: record.data.mode, contentIncluded: false },
+  }));
+  assert.equal(result.transformed, 1);
+  const [queued] = await queue.list();
+  assert.equal(queued.record.data.subject, undefined);
+  assert.equal(queued.record.data.contentIncluded, false);
+  client.destroy();
 });
 
 test('client queue contains projections only and preserves pending work after a write error', async () => {

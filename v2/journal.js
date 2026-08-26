@@ -19,9 +19,9 @@ export const JOURNAL_APPS = Object.freeze([
 ]);
 
 export const JOURNAL_KINDS = Object.freeze({
-  tide: ['clip', 'dump'],
+  tide: ['clip', 'dump', 'item-activity'],
   focus: ['session'],
-  loom: ['block'],
+  loom: ['block', 'block-activity'],
   petal: [
     'reading-session',
     'highlight-created', 'highlight-updated',
@@ -46,8 +46,12 @@ const OFFSET_ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+
 const STATUS_FIELDS = new Set([
   'v', 'app', 'context', 'journalEnabled', 'reportedAt', 'enabledAt',
   'lastSuccessfulWriteAt', 'pendingCount', 'lastErrorCode', 'backfill',
+  'contentIncluded', 'redaction',
 ]);
 const BACKFILL_FIELDS = new Set([
+  'status', 'from', 'to', 'processedDates', 'totalDates', 'updatedAt',
+]);
+const REDACTION_FIELDS = new Set([
   'status', 'from', 'to', 'processedDates', 'totalDates', 'updatedAt',
 ]);
 const DB_PREFIX = 'shared-journal-pending-';
@@ -234,6 +238,10 @@ export function createMemoryQueue(initial = []) {
     async put(item) { records.set(item.key, structuredClone(item)); },
     async list() { return [...records.values()].map((item) => structuredClone(item)); },
     async remove(keys) { keys.forEach((key) => records.delete(key)); },
+    async replace(items) {
+      records.clear();
+      items.forEach((item) => records.set(item.key, structuredClone(item)));
+    },
     async count() { return records.size; },
   };
 }
@@ -282,6 +290,10 @@ export function createIndexedDbQueue(namespace) {
     })),
     remove: (keys) => pendingTransaction(namespace, 'readwrite', (store) => {
       keys.forEach((key) => store.delete(key));
+    }),
+    replace: (items) => pendingTransaction(namespace, 'readwrite', (store) => {
+      store.clear();
+      items.forEach((item) => store.put(item));
     }),
     count: () => pendingTransaction(namespace, 'readonly', (store) => new Promise((resolve, reject) => {
       const request = store.count();
@@ -436,9 +448,10 @@ export function sanitizeStatus(app, context, input) {
   const output = { v: JOURNAL_VERSION, app, context };
   for (const [key, value] of Object.entries(input || {})) {
     if (!STATUS_FIELDS.has(key) || key === 'v' || key === 'app' || key === 'context') continue;
-    if (key === 'backfill') {
+    if (key === 'backfill' || key === 'redaction') {
       if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
-      output.backfill = Object.fromEntries(Object.entries(value).filter(([child]) => BACKFILL_FIELDS.has(child)));
+      const fields = key === 'backfill' ? BACKFILL_FIELDS : REDACTION_FIELDS;
+      output[key] = Object.fromEntries(Object.entries(value).filter(([child]) => fields.has(child)));
     } else {
       output[key] = value;
     }
@@ -595,6 +608,27 @@ export function createJournalClient({
     },
     flush,
     pendingCount: () => queue.count(),
+    transformPending: async (transform) => {
+      if (typeof transform !== 'function') throw new JournalError('Pending transform is required.');
+      const items = await queue.list();
+      const transformed = [];
+      for (const item of items) {
+        const nextRecord = await transform(structuredClone(item.record), {
+          date: item.date, queuedAt: item.queuedAt,
+        });
+        if (nextRecord == null) continue;
+        transformed.push({ ...item, record: validateRecord(app, nextRecord) });
+      }
+      if (typeof queue.replace !== 'function') {
+        throw new JournalError('Pending queue cannot be transformed safely.', {
+          type: 'storage', code: 'JOURNAL_QUEUE_TRANSFORM_UNAVAILABLE',
+        });
+      }
+      await queue.replace(transformed);
+      const pendingCount = await queue.count();
+      emit({ status: pendingCount ? 'pending' : 'ready', pendingCount });
+      return { transformed: transformed.length, removed: items.length - transformed.length, pendingCount };
+    },
     reportStatus: async (status) => writeStatus({
       io, config: await resolveConfig(), app, context,
       status: { ...status, reportedAt: status.reportedAt || localIso(now()), pendingCount: await queue.count() },
