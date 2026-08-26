@@ -97,6 +97,9 @@ Tide의 `item-activity`와 Loom의 `block-activity`는 객체가 속한 날짜�
 Source status는 `reportedAt`, `lastSuccessfulWriteAt`, `pendingCount`, `lastErrorCode`,
 `contentIncluded`, `backfill`, `redaction`의 안전한 필드만 허용합니다. 원문 포함을 끌 때는
 `transformPending()`으로 아직 전송되지 않은 projection도 같은 allowlist로 정제할 수 있습니다.
+사용자가 날짜 범위를 확인한 뒤 `redactRange({ from, to, transform })`을 호출하면 현재 설치
+context의 merged projection만 읽어 같은 record ID의 metadata-only 최신 revision을 queue에 넣고
+전송합니다. 다른 설치 context, 원본 앱 데이터, 일반 Sync 데이터와 Git history는 변경하지 않습니다.
 
 ## 쓰는 법
 

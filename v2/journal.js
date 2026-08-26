@@ -311,6 +311,23 @@ function parsePartName(name, date, context) {
   return match ? Number(match[1]) : null;
 }
 
+function datesInRange(from, to, maximum = 366) {
+  if (!isDate(from) || !isDate(to) || from > to) {
+    throw new JournalError('Invalid journal date range.', { code: 'JOURNAL_DATE_RANGE' });
+  }
+  const dates = [];
+  let cursor = new Date(`${from}T12:00:00Z`);
+  const end = new Date(`${to}T12:00:00Z`);
+  while (cursor <= end) {
+    dates.push(cursor.toISOString().slice(0, 10));
+    if (dates.length > maximum) {
+      throw new JournalError('Journal date range is too large.', { code: 'JOURNAL_DATE_RANGE' });
+    }
+    cursor = new Date(cursor.getTime() + 86_400_000);
+  }
+  return dates;
+}
+
 async function loadParts({ io, config, app, date, context }) {
   const dir = `journal/activity/${app}/${date.slice(0, 7)}`;
   const entries = await io.listDir(config, dir);
@@ -628,6 +645,65 @@ export function createJournalClient({
       const pendingCount = await queue.count();
       emit({ status: pendingCount ? 'pending' : 'ready', pendingCount });
       return { transformed: transformed.length, removed: items.length - transformed.length, pendingCount };
+    },
+    redactRange: async ({ from, to, transform }) => {
+      if (typeof transform !== 'function') {
+        throw new JournalError('Redaction transform is required.', { code: 'JOURNAL_REDACTION_TRANSFORM' });
+      }
+      const dates = datesInRange(from, to);
+      const config = await resolveConfig();
+      let processedDates = 0;
+      let redactedRecords = 0;
+      const status = (state) => writeStatus({
+        io, config, app, context,
+        status: {
+          journalEnabled: isEnabled(),
+          redaction: {
+            status: state, from, to, processedDates,
+            totalDates: dates.length, updatedAt: localIso(now()),
+          },
+        },
+      }).catch(() => {});
+      await status('running');
+      try {
+        for (const date of dates) {
+          let parts = [];
+          try {
+            parts = await loadParts({ io, config, app, date, context });
+          } catch (error) {
+            if (!(error?.type === 'notfound' || error?.status === 404)) throw error;
+          }
+          const current = mergeRecords(parts.flatMap((part) => part.envelope.records.map((record) => ({
+            record, path: part.path,
+          }))));
+          for (const entry of current) {
+            const original = entry.record;
+            const candidate = await transform(structuredClone(original), { date });
+            if (!candidate) continue;
+            const next = validateRecord(app, {
+              ...candidate,
+              id: original.id,
+              kind: original.kind,
+              at: original.at,
+              deleted: false,
+              updatedAt: localIso(now()),
+            });
+            await queue.put({
+              key: `${date}::${next.id}`, date, record: next, queuedAt: localIso(now()),
+            });
+            redactedRecords += 1;
+          }
+          const result = await flush();
+          if (result.error) throw result.error;
+          processedDates += 1;
+        }
+        await status('complete');
+        return { processedDates, totalDates: dates.length, redactedRecords, pendingCount: await queue.count(), error: null };
+      } catch (error) {
+        await status('partial');
+        emit({ status: 'error', pendingCount: await queue.count(), errorCode: safeErrorCode(error) });
+        return { processedDates, totalDates: dates.length, redactedRecords, pendingCount: await queue.count(), error };
+      }
     },
     reportStatus: async (status) => writeStatus({
       io, config: await resolveConfig(), app, context,

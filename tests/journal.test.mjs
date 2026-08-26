@@ -254,6 +254,31 @@ test('pending projections can be sanitized before a later flush', async () => {
   client.destroy();
 });
 
+test('redaction reads only the current context and queues metadata-only replacements', async () => {
+  const io = new FakeIo();
+  await writeRecordsForDate({ io, config: {}, app: 'focus', date, context,
+    records: [focusRecord({ data: { mode: 'focus', subject: 'Private', task: 'Draft', contentIncluded: true } })], now });
+  await writeRecordsForDate({ io, config: {}, app: 'focus', date, context: 'other-context',
+    records: [focusRecord({ id: 'other', data: { subject: 'Other private content' } })], now });
+  const queue = createMemoryQueue();
+  const client = createJournalClient({ app: 'focus', context, queue, io,
+    resolveConfig: async () => ({}), debounceMs: 60_000,
+    now: () => new Date('2026-08-18T03:00:00.000Z') });
+  const result = await client.redactRange({ from: date, to: date, transform: (record) => {
+    const { subject, task, ...data } = record.data;
+    return { ...record, title: 'Focus session', data: { ...data, contentIncluded: false } };
+  } });
+  assert.equal(result.error, null);
+  assert.equal(result.redactedRecords, 1);
+  const redacted = await readDate({ io, config: {}, app: 'focus', date });
+  const own = redacted.records.find((record) => record.id === 'session-1');
+  const other = redacted.records.find((record) => record.id === 'other');
+  assert.equal(own.data.subject, undefined);
+  assert.equal(own.data.task, undefined);
+  assert.equal(own.data.contentIncluded, false);
+  assert.equal(other.data.subject, 'Other private content');
+});
+
 test('client queue contains projections only and preserves pending work after a write error', async () => {
   const queue = createMemoryQueue();
   const io = new FakeIo();
