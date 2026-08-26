@@ -100,8 +100,8 @@ class FakeIo {
   }
 }
 
-test('path builders accept only the eight apps, real dates, safe contexts, and numbered parts', () => {
-  assert.deepEqual(JOURNAL_APPS, ['tide', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove']);
+test('path builders accept only the nine apps, real dates, safe contexts, and numbered parts', () => {
+  assert.deepEqual(JOURNAL_APPS, ['tide', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove', 'today']);
   assert.equal(activityPath('focus', date, context, 1),
     'journal/activity/focus/2026-08/2026-08-17.fixture-a1b2c3d4.p01.json');
   assert.equal(statusPath('focus', context), 'journal/status/focus/fixture-a1b2c3d4.json');
@@ -151,6 +151,20 @@ test('Tide and Loom activity kinds extend the contract without changing existing
     data: { activityDate: date, sourceDate: '2026-08-01', actions: ['copied'],
       firstAt: focusRecord().at, lastAt: focusRecord().updatedAt, historyAccuracy: 'exact' },
   }).kind, 'item-activity');
+});
+
+test('today app kinds validate additively without changing any existing app', () => {
+  assert.deepEqual(JOURNAL_KINDS.today, ['task', 'task-activity']);
+  const taskRecord = (over = {}) => ({
+    id: 'task-1', kind: 'task', at: '2026-08-26T09:00:00-05:00',
+    updatedAt: '2026-08-26T09:00:00-05:00', title: '재무 챕터 3 읽기',
+    data: { status: 'today', dueAt: null }, ...over,
+  });
+  assert.equal(validateRecord('today', taskRecord()).kind, 'task');
+  assert.equal(validateRecord('today', taskRecord({ kind: 'task-activity',
+    data: { activityDate: date, actions: ['completed'] } })).kind, 'task-activity');
+  assert.throws(() => validateRecord('today', taskRecord({ kind: 'habit' })));
+  assert.throws(() => validateRecord('focus', taskRecord()));
 });
 
 test('folio annotations retain the newest update and disappear after a tombstone', () => {
