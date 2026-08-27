@@ -100,8 +100,8 @@ class FakeIo {
   }
 }
 
-test('path builders accept only the nine apps, real dates, safe contexts, and numbered parts', () => {
-  assert.deepEqual(JOURNAL_APPS, ['tide', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove', 'today']);
+test('path builders accept only the ten apps, real dates, safe contexts, and numbered parts', () => {
+  assert.deepEqual(JOURNAL_APPS, ['tide', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove', 'today', 'cove']);
   assert.equal(activityPath('focus', date, context, 1),
     'journal/activity/focus/2026-08/2026-08-17.fixture-a1b2c3d4.p01.json');
   assert.equal(statusPath('focus', context), 'journal/status/focus/fixture-a1b2c3d4.json');

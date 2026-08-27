@@ -15,7 +15,7 @@ export const JOURNAL_VERSION = 1;
 export const JOURNAL_MAX_BYTES = 900_000;
 export const JOURNAL_DEBOUNCE_MS = 4_000;
 export const JOURNAL_APPS = Object.freeze([
-  'tide', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove', 'today',
+  'tide', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove', 'today', 'cove',
 ]);
 
 export const JOURNAL_KINDS = Object.freeze({
@@ -39,6 +39,7 @@ export const JOURNAL_KINDS = Object.freeze({
   slate: ['board-activity'],
   grove: ['map-activity'],
   today: ['task', 'task-activity'],
+  cove: ['link-saved', 'link-activity', 'highlight-created', 'highlight-updated', 'note-created', 'note-updated', 'excerpt-exported'],
 });
 
 const DATE_RE = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/;
