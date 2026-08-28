@@ -43,7 +43,7 @@ shared/
     ├─ sync-global.js   sync.js를 classic <script> 에서 쓰기 위한 로더 (window.SharedSync)
     ├─ backup.js        JSON 백업 내보내기/가져오기 공통 코드 (ES module)
     ├─ fontsize.js       글자 크기 6단계(6/8/10/12/14/17px) 공통 코드 (ES module)
-    └─ theme.css        webapp-standard.md 기준 색상·글꼴 CSS 변수
+    └─ theme.css        WebApp_House_Style.md 기준 색상·글꼴 CSS 변수
 └─ v2/
     └─ journal.js      Daybook 날짜별 projection 계약·writer·reader (ES module)
 ```
