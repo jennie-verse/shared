@@ -167,6 +167,19 @@ test('today app kinds validate additively without changing any existing app', ()
   assert.throws(() => validateRecord('focus', taskRecord()));
 });
 
+test('reading and usage sessions extend the source contracts additively', () => {
+  assert.ok(JOURNAL_KINDS.folio.includes('reading-session'));
+  assert.ok(JOURNAL_KINDS.cove.includes('reading-session'));
+  assert.ok(JOURNAL_KINDS.slate.includes('usage-session'));
+  assert.ok(JOURNAL_KINDS.grove.includes('usage-session'));
+  for (const [app, kind] of [['folio', 'reading-session'], ['cove', 'reading-session'], ['slate', 'usage-session'], ['grove', 'usage-session']]) {
+    assert.equal(validateRecord(app, {
+      ...focusRecord(), id: `${app}-session-1`, kind, title: 'Item',
+      data: { itemId: 'item-1', startedAt: focusRecord().at, endedAt: focusRecord().updatedAt, activeSeconds: 60 },
+    }).kind, kind);
+  }
+});
+
 test('folio annotations retain the newest update and disappear after a tombstone', () => {
   const created = validateRecord('folio', folioRecord());
   const updated = validateRecord('folio', folioRecord({

@@ -57,6 +57,9 @@ shared/
 Source 앱은 원래 저장을 먼저 완료한 뒤 동적 import로 journal 모듈을 불러야 합니다.
 모듈 로드나 원격 쓰기가 실패해도 원래 저장·sync·events 동작은 계속되어야 합니다.
 
+2026-09-01부터 Folio·Cove의 `reading-session`과 Slate·Grove의
+`usage-session`을 additive kind로 허용합니다. 기존 kind와 envelope `v: 1`은 그대로 유지합니다.
+
 ```js
 const { createJournalClient } = await import(
   'https://<account>.github.io/shared/v2/journal.js'

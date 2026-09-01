@@ -31,15 +31,16 @@ export const JOURNAL_KINDS = Object.freeze({
   ],
   folio: [
     'file-activity',
+    'reading-session',
     'excerpt-exported',
     'highlight-created', 'highlight-updated',
     'note-created', 'note-updated',
   ],
   quill: ['file-activity'],
-  slate: ['board-activity'],
-  grove: ['map-activity'],
+  slate: ['board-activity', 'usage-session'],
+  grove: ['map-activity', 'usage-session'],
   today: ['task', 'task-activity'],
-  cove: ['link-saved', 'link-activity', 'highlight-created', 'highlight-updated', 'note-created', 'note-updated', 'excerpt-exported'],
+  cove: ['link-saved', 'link-activity', 'reading-session', 'highlight-created', 'highlight-updated', 'note-created', 'note-updated', 'excerpt-exported'],
 });
 
 const DATE_RE = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/;
