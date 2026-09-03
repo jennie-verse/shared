@@ -15,11 +15,12 @@ export const JOURNAL_VERSION = 1;
 export const JOURNAL_MAX_BYTES = 900_000;
 export const JOURNAL_DEBOUNCE_MS = 4_000;
 export const JOURNAL_APPS = Object.freeze([
-  'tide', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove', 'today', 'cove',
+  'tide', 'clip', 'focus', 'loom', 'petal', 'folio', 'quill', 'slate', 'grove', 'today', 'cove',
 ]);
 
 export const JOURNAL_KINDS = Object.freeze({
   tide: ['clip', 'dump', 'item-activity'],
+  clip: ['clip', 'item-activity'],
   focus: ['session'],
   loom: ['block', 'block-activity'],
   petal: [
