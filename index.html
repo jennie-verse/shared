@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FDF7F8">
+<meta name="description" content="Shared static modules for personal web apps.">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>shared — personal web app modules</title>
+<link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+<main>
+  <h1>shared</h1>
+  <p class="lede">Static modules that the personal web apps load directly over GitHub Pages. There is no app to open here.</p>
+
+  <div class="card">
+    <h2>Modules in <code>v1/</code></h2>
+    <ul>
+      <li><a href="./v1/sync.js"><code>sync.js</code></a> — GitHub Contents API read/write plus an outbox retry queue (ES module)</li>
+      <li><a href="./v1/sync-global.js"><code>sync-global.js</code></a> — the same API for classic <code>&lt;script&gt;</code> tags</li>
+      <li><a href="./v1/backup.js"><code>backup.js</code></a> — JSON backup and restore helpers</li>
+      <li><a href="./v1/fontsize.js"><code>fontsize.js</code></a> — the six-step text size control</li>
+      <li><a href="./v1/theme.css"><code>theme.css</code></a> — shared pastel theme tokens</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Modules in <code>v2/</code></h2>
+    <ul>
+      <li><a href="./v2/journal.js"><code>journal.js</code></a> — Journal projection paths, writer, reader, merge, and retry queue (ES module)</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Versioning rule</h2>
+    <p class="note">Files under <code>v1/</code> are never edited once published. A change means a new <code>v2/</code> folder, with apps moved over one at a time. Editing <code>v1/</code> in place would break every app that already depends on it.</p>
+  </div>
+
+  <footer>See <a href="./README.md">the repository notes</a> for the full contract.</footer>
+</main>
+</body>
+</html>
